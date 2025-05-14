@@ -1,4 +1,4 @@
-# DEA Research Tool
+# Research Tool
 
 A tool to fetch and analyze Dielectric Elastomer Actuator (DEA) research papers from various sources.
 
