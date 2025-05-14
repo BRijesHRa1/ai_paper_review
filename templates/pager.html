@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DEA Research Papers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .search-panel {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .search-row label {
+            min-width: 100px;
+        }
+        .results-panel {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .result-count {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .paper {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .paper-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .paper-authors {
+            color: #666;
+            margin-bottom: 5px;
+            font-style: italic;
+        }
+        .paper-link {
+            display: inline-block;
+            margin-top: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .generate-btn {
+            background-color: #4285f4;
+            color: white;
+        }
+        .stop-btn {
+            background-color: #ea4335;
+            color: white;
+        }
+        .export-btn {
+            background-color: #34a853;
+            color: white;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slider-container input {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DEA Research Paper Finder</h1>
+        <p>Search for Dielectric Elastomer Actuator research papers across academic databases</p>
+    </div>
+    
+    <div class="search-panel">
+        <div class="search-row">
+            <label for="query">Search term:</label>
+            <input type="text" id="query" placeholder="E.g. dielectric elastomer actuator" value="dielectric elastomer actuator">
+        </div>
+        
+        <div class="search-row slider-container">
+            <label for="maxResults">Max results:</label>
+            <input type="range" id="maxResults" min="10" max="1000" step="10" value="100">
+            <span id="maxResultsValue">100</span>
+        </div>
+        
+        <div class="search-row">
+            <button class="generate-btn" onclick="startSearch()">Generate</button>
+            <button class="stop-btn" onclick="stopSearch()">Stop</button>
+            <button class="export-btn" onclick="exportCSV()">Export to CSV</button>
+        </div>
+    </div>
+    
+    <div class="results-panel">
+        <div id="resultCount" class="result-count">Ready to search</div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let isSearching = false;
+        let pollInterval;
+
+        function updateMaxResults() {
+            document.getElementById('maxResultsValue').textContent = document.getElementById('maxResults').value;
+        }
+
+        function startSearch() {
+            if (isSearching) return;
+            
+            const query = document.getElementById('query').value;
+            const maxResults = document.getElementById('maxResults').value;
+            
+            document.getElementById('resultCount').textContent = 'Searching...';
+            document.getElementById('results').innerHTML = '';
+            
+            fetch('/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query, max_results: maxResults })
+            });
+            
+            isSearching = true;
+            pollResults();
+        }
+
+        function stopSearch() {
+            if (!isSearching) return;
+            
+            fetch('/stop', { method: 'POST' });
+            isSearching = false;
+            clearInterval(pollInterval);
+            document.getElementById('resultCount').textContent += ' (Stopped)';
+        }
+
+        function pollResults() {
+            pollInterval = setInterval(() => {
+                fetch('/results')
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultsDiv = document.getElementById('results');
+                        const resultCountDiv = document.getElementById('resultCount');
+                        
+                        if (data.length === 0) {
+                            resultCountDiv.textContent = 'No results found yet';
+                        } else {
+                            resultCountDiv.textContent = `Found ${data.length} papers`;
+                        }
+                        
+                        resultsDiv.innerHTML = data.map(paper => `
+                            <div class="paper">
+                                <div class="paper-title">${paper.title}</div>
+                                <div class="paper-authors">${paper.authors && paper.authors.length > 0 ? paper.authors.join(', ') : 'Unknown authors'}</div>
+                                <a href="${paper.url}" class="paper-link" target="_blank">View Paper</a>
+                            </div>
+                        `).join('');
+                    });
+            }, 1000);
+        }
+
+        function exportCSV() {
+            window.location.href = '/export_csv';
+        }
+
+        // Initialize max results display
+        document.getElementById('maxResults').addEventListener('input', updateMaxResults);
+        updateMaxResults();
+    </script>
+</body>
+</html> 
