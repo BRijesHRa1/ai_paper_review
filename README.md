@@ -1,6 +1,6 @@
 # Research Tool
 
-A tool to fetch and analyze Dielectric Elastomer Actuator (DEA) research papers from various sources.
+A tool to fetch and analyze research papers from various sources.
 
 ## Features
 
