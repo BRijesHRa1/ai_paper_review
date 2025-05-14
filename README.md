@@ -23,37 +23,6 @@ cd dea-research-tool
 pip install -r requirements.txt
 ```
 
-## Usage
-
-### Process specific papers
-
-To process specific papers, use the `--urls` parameter:
-
-```bash
-python dea_research_tool.py --urls https://www.nature.com/articles/s41467-024-48243-y https://www.nature.com/articles/s41467-024-54278-y
-```
-
-### Search for papers
-
-To search for papers, use the `--search` parameter:
-
-```bash
-python dea_research_tool.py --search "dielectric elastomer actuator soft robot"
-```
-
-You can limit the number of search results with the `--max-results` parameter:
-
-```bash
-python dea_research_tool.py --search "dielectric elastomer actuator" --max-results 5
-```
-
-### Specify output directory
-
-To specify the output directory, use the `--output-dir` parameter:
-
-```bash
-python dea_research_tool.py --urls https://www.nature.com/articles/s41467-024-48243-y --output-dir my_results
-```
 
 ## Output
 
